@@ -1,7 +1,10 @@
 /**
  * Canvas Performance Optimizer
  * Provides advanced performance optimizations for canvas animations
+ * PHASE 6 PERFORMANCE OPTIMIZATIONS - COMMENTED OUT
  */
+
+/*
 
 export class CanvasPerformanceOptimizer {
     constructor() {
@@ -238,6 +241,19 @@ export class RAFOptimizer {
 
         requestAnimationFrame(this.animate);
     };
+}
+*/
+
+// Temporary fallback class
+export class CanvasPerformanceOptimizer {
+    constructor() {
+        this.fps = 60;
+    }
+    
+    optimizeCanvas() {}
+    updateFPS() {}
+    shouldSkipFrame() { return false; }
+    getPerformanceMetrics() { return {}; }
 }
 
 export default CanvasPerformanceOptimizer;

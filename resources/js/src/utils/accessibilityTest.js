@@ -1,7 +1,10 @@
 /**
  * Accessibility Testing Utilities
  * Helper functions to test and validate accessibility features
+ * PHASE 6 ACCESSIBILITY FEATURES - COMMENTED OUT
  */
+
+/*
 
 /**
  * Test keyboard navigation
@@ -149,4 +152,10 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
     console.log(
         "Run window.accessibilityTest.runAudit() to test accessibility features"
     );
+}
+*/
+
+// Temporary fallback function
+export function setupAccessibilityTesting() {
+    // Accessibility testing commented out for Phase 6 rollback
 }

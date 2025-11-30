@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Contact;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\ContactFormSubmitted;
+// use Illuminate\Support\Facades\Mail;
+// use App\Mail\ContactFormSubmitted;
 
 class ContactController extends Controller
 {

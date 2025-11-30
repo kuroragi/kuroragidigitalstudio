@@ -1,9 +1,12 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState } from "react";
+
+/* PHASE 6 PERFORMANCE OPTIMIZATIONS - COMMENTED OUT
 import usePerformanceOptimization from "../../hooks/usePerformanceOptimization";
 import CanvasPerformanceOptimizer, {
     CanvasResizeOptimizer,
 } from "../../utils/canvasOptimizer";
 import { useLazyLoading } from "../../hooks/useLazyLoading.jsx";
+*/
 
 const MeteorCanvas = ({
     className = "",
@@ -21,11 +24,16 @@ const MeteorCanvas = ({
     const lastFrameTimeRef = useRef(0);
     const fpsCounterRef = useRef({ frames: 0, lastTime: 0, fps: 60 });
     const meteorPoolRef = useRef([]);
+    
+    /* PHASE 6 PERFORMANCE OPTIMIZATIONS - COMMENTED OUT
     const performanceOptimizerRef = useRef(new CanvasPerformanceOptimizer());
     const resizeOptimizerRef = useRef(null);
+    */
+    
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [isVisible, setIsVisible] = useState(false);
 
+    /* PHASE 6 PERFORMANCE OPTIMIZATIONS - COMMENTED OUT
     // Lazy loading for better performance
     const { elementRef, isIntersecting } = useLazyLoading({
         threshold: 0.1,
@@ -39,345 +47,182 @@ const MeteorCanvas = ({
         respectsReducedMotion,
         performanceLevel,
     } = usePerformanceOptimization();
+    */
 
-    // Use optimized settings if auto-optimize is enabled
-    const meteorCount = autoOptimize
-        ? optimizedSettings.meteorCount || baseMeteorCount
-        : baseMeteorCount;
-    const meteorSpeed = autoOptimize
-        ? optimizedSettings.meteorSpeed || baseMeteorSpeed
-        : baseMeteorSpeed;
-    const bigMeteorChance = autoOptimize
-        ? optimizedSettings.bigMeteorChance || baseBigMeteorChance
-        : baseBigMeteorChance;
-    const glowIntensity = autoOptimize
-        ? optimizedSettings.glowIntensity || baseGlowIntensity
-        : baseGlowIntensity;
+    // Use base settings without optimization
+    const meteorCount = baseMeteorCount;
+    const meteorSpeed = baseMeteorSpeed;
+    const bigMeteorChance = baseBigMeteorChance;
+    const glowIntensity = baseGlowIntensity;
 
-    // Optimized Meteor class with pooling support
+    // Basic Meteor class
     class Meteor {
         constructor(canvasWidth, canvasHeight) {
             this.reset(canvasWidth, canvasHeight, true);
             this.trail = [];
-            this.maxTrailLength = autoOptimize
-                ? optimizedSettings.trailLength || 4
-                : Math.random() * 3 + 2;
-            this.isActive = true;
-            this.lastX = 0;
-            this.lastY = 0;
+            this.maxTrailLength = Math.random() * 3 + 2;
         }
 
         reset(canvasWidth, canvasHeight, isInitial = false) {
-            // Spawn meteors only from top, falling down
-            // Random spawn across the top edge with some variation
-            const spawnMargin = canvasWidth * 0.2; // 20% margin on sides
-            this.x =
-                spawnMargin + Math.random() * (canvasWidth - spawnMargin * 2);
-            this.y = -100; // Start higher above screen
-
-            // Slow gentle falling movement
-            this.vx = (Math.random() - 0.5) * meteorSpeed * 0.1; // Very slight horizontal drift
-            this.vy = Math.random() * meteorSpeed * 0.3 + meteorSpeed * 0.2; // Slow downward movement
-
-            // Small star-like meteors
-            this.isBig = Math.random() < bigMeteorChance;
-            this.size = this.isBig
-                ? Math.random() * 1.5 + 1 // Big meteors: 1-2.5px
-                : Math.random() * 0.8 + 0.3; // Regular meteors: 0.3-1.1px
-            this.opacity = Math.random() * 0.6 + 0.4;
-            this.hue = Math.random() * 60 + 200; // Blue to cyan range
-            this.twinkle = Math.random() * 2 * Math.PI;
-            this.twinkleSpeed = Math.random() * 0.02 + 0.01;
-
-            // Clear trail on reset
-            if (!isInitial) {
-                this.trail = [];
-            }
+            this.x = Math.random() * canvasWidth * 1.5 - canvasWidth * 0.5;
+            this.y = isInitial 
+                ? Math.random() * canvasHeight 
+                : -Math.random() * 200 - 50;
+            this.vx = (Math.random() - 0.5) * 2;
+            this.vy = Math.random() * 3 + 2;
+            this.size = Math.random() > bigMeteorChance ? Math.random() * 1 + 0.5 : Math.random() * 2 + 2;
+            this.opacity = Math.random() * 0.8 + 0.2;
+            this.hue = Math.random() * 60 + 10; // Orange-ish colors
+            this.angle = Math.atan2(this.vy, this.vx);
+            this.length = Math.random() * 20 + 10;
         }
 
-        update(canvasWidth, canvasHeight, deltaTime) {
-            // Store previous position for trail
-            this.trail.push({ x: this.x, y: this.y, opacity: this.opacity });
+        update(deltaTime, canvasWidth, canvasHeight) {
+            const speed = meteorSpeed * deltaTime * 60;
+            
+            this.x += this.vx * speed;
+            this.y += this.vy * speed;
+            
+            // Add to trail
+            this.trail.push({ x: this.x, y: this.y });
             if (this.trail.length > this.maxTrailLength) {
                 this.trail.shift();
             }
-
-            // Update position
-            this.x += this.vx * deltaTime;
-            this.y += this.vy * deltaTime;
-
-            // Update twinkle
-            this.twinkle += this.twinkleSpeed * deltaTime;
-
-            // Check if meteor has fallen below screen or drifted too far horizontally
-            if (
-                this.y > canvasHeight + 100 || // Fallen below screen
-                this.x < -100 || // Drifted too far left
-                this.x > canvasWidth + 100 // Drifted too far right
-            ) {
+            
+            // Reset if out of bounds
+            if (this.y > canvasHeight + 100 || this.x > canvasWidth + 100 || this.x < -100) {
                 this.reset(canvasWidth, canvasHeight);
             }
         }
 
-        draw(ctx, canvasWidth, canvasHeight) {
-            // Calculate fade based on position near edges
-            let edgeFade = 1;
-            if (fadeOnEdges) {
-                const fadeDistance = 150;
-                const distanceFromEdge = Math.min(
-                    this.x,
-                    this.y,
-                    canvasWidth - this.x,
-                    canvasHeight - this.y
-                );
-                edgeFade = Math.min(
-                    1,
-                    Math.max(0, distanceFromEdge / fadeDistance)
-                );
-            }
+        draw(ctx) {
+            if (this.trail.length < 2) return;
 
-            const finalOpacity =
-                this.opacity * edgeFade * (0.8 + Math.sin(this.twinkle) * 0.2);
-
+            ctx.save();
+            
             // Draw trail
-            this.trail.forEach((point, index) => {
-                const trailOpacity =
-                    finalOpacity * (index / this.trail.length) * 0.3;
-                const trailSize = this.size * (index / this.trail.length) * 0.5;
-
-                if (trailOpacity > 0.01) {
-                    ctx.save();
-                    ctx.globalAlpha = trailOpacity;
-
-                    // Trail glow
-                    const gradient = ctx.createRadialGradient(
-                        point.x,
-                        point.y,
-                        0,
-                        point.x,
-                        point.y,
-                        trailSize * 3
-                    );
-                    gradient.addColorStop(0, `hsl(${this.hue}, 100%, 70%)`);
-                    gradient.addColorStop(0.5, `hsl(${this.hue}, 80%, 50%)`);
-                    gradient.addColorStop(1, "transparent");
-
-                    ctx.fillStyle = gradient;
-                    ctx.beginPath();
-                    ctx.arc(point.x, point.y, trailSize * 3, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    ctx.restore();
-                }
-            });
-
-            // Draw main meteor
-            if (finalOpacity > 0.01) {
-                ctx.save();
-                ctx.globalAlpha = finalOpacity;
-
-                // Subtle star glow - minimal
-                if (glowIntensity > 0) {
-                    const glowSize = this.size * 2 * glowIntensity; // Much smaller glow
-                    const glowGradient = ctx.createRadialGradient(
-                        this.x,
-                        this.y,
-                        0,
-                        this.x,
-                        this.y,
-                        glowSize
-                    );
-                    glowGradient.addColorStop(0, `hsl(${this.hue}, 80%, 85%)`);
-                    glowGradient.addColorStop(
-                        0.7,
-                        `hsl(${this.hue}, 60%, 60%)`
-                    );
-                    glowGradient.addColorStop(1, `hsl(${this.hue}, 40%, 30%)`);
-                    glowGradient.addColorStop(1, "transparent");
-
-                    ctx.fillStyle = glowGradient;
-                    ctx.beginPath();
-                    ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                // Inner core
-                const coreGradient = ctx.createRadialGradient(
-                    this.x,
-                    this.y,
-                    0,
-                    this.x,
-                    this.y,
-                    this.size
-                );
-                coreGradient.addColorStop(0, `hsl(${this.hue}, 100%, 90%)`);
-                coreGradient.addColorStop(0.5, `hsl(${this.hue}, 90%, 70%)`);
-                coreGradient.addColorStop(1, `hsl(${this.hue}, 70%, 50%)`);
-
-                ctx.fillStyle = coreGradient;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-
-                ctx.restore();
+            const gradient = ctx.createLinearGradient(
+                this.trail[0].x, this.trail[0].y,
+                this.x, this.y
+            );
+            gradient.addColorStop(0, `hsla(${this.hue}, 70%, 50%, 0)`);
+            gradient.addColorStop(1, `hsla(${this.hue}, 90%, 70%, ${this.opacity * glowIntensity})`);
+            
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = this.size;
+            ctx.lineCap = "round";
+            
+            ctx.beginPath();
+            ctx.moveTo(this.trail[0].x, this.trail[0].y);
+            for (let i = 1; i < this.trail.length; i++) {
+                ctx.lineTo(this.trail[i].x, this.trail[i].y);
             }
+            ctx.stroke();
+            
+            // Draw main meteor body with glow
+            const headGradient = ctx.createRadialGradient(
+                this.x, this.y, 0,
+                this.x, this.y, this.size * 3
+            );
+            headGradient.addColorStop(0, `hsla(${this.hue}, 100%, 80%, ${this.opacity})`);
+            headGradient.addColorStop(0.4, `hsla(${this.hue}, 90%, 60%, ${this.opacity * 0.8})`);
+            headGradient.addColorStop(1, `hsla(${this.hue}, 70%, 40%, 0)`);
+            
+            ctx.fillStyle = headGradient;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size * 2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.restore();
         }
     }
 
-    // Initialize meteors
-    const initializeMeteors = (width, height) => {
-        meteorsRef.current = Array.from(
-            { length: meteorCount },
-            () => new Meteor(width, height)
-        );
-    };
-
-    // Handle canvas resize - always full viewport
-    const handleResize = () => {
+    // Initialize canvas and meteors
+    useEffect(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        const dpr = window.devicePixelRatio || 1;
+        const updateDimensions = () => {
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            
+            setDimensions({ width: rect.width, height: rect.height });
+            
+            // Reinitialize meteors when size changes
+            meteorsRef.current = Array.from({ length: meteorCount }, () => 
+                new Meteor(rect.width, rect.height)
+            );
+        };
 
-        canvas.width = width * dpr;
-        canvas.height = height * dpr;
+        updateDimensions();
+        window.addEventListener('resize', updateDimensions);
+        
+        return () => window.removeEventListener('resize', updateDimensions);
+    }, [meteorCount]);
 
-        const ctx = canvas.getContext("2d");
-        ctx.scale(dpr, dpr);
-
-        canvas.style.width = width + "px";
-        canvas.style.height = height + "px";
-
-        setDimensions({ width, height });
-
-        // Reinitialize meteors with new dimensions
-        if (meteorsRef.current.length > 0) {
-            initializeMeteors(width, height);
+    // Visibility detection (basic)
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsVisible(entry.isIntersecting),
+            { threshold: 0.1 }
+        );
+        
+        if (canvasRef.current) {
+            observer.observe(canvasRef.current);
         }
-    };
+        
+        return () => observer.disconnect();
+    }, []);
 
     // Animation loop
-    const animate = () => {
+    useEffect(() => {
+        if (!enableAnimation || !isVisible) return;
+
         const canvas = canvasRef.current;
-        if (!canvas || !isVisible || respectsReducedMotion || !enableAnimation)
-            return;
+        if (!canvas) return;
 
-        const ctx = canvas.getContext("2d");
-        const { width, height } = dimensions;
+        const ctx = canvas.getContext('2d');
+        
+        const animate = (currentTime) => {
+            const deltaTime = (currentTime - lastFrameTimeRef.current) / 1000;
+            lastFrameTimeRef.current = currentTime;
 
-        // Update FPS monitoring
-        updateFPS();
+            // Clear canvas
+            ctx.clearRect(0, 0, dimensions.width, dimensions.height);
 
-        // Clear canvas with fade effect
-        ctx.fillStyle = "rgba(7, 7, 10, 0.1)";
-        ctx.fillRect(0, 0, width, height);
+            // Update and draw meteors
+            meteorsRef.current.forEach(meteor => {
+                meteor.update(deltaTime, dimensions.width, dimensions.height);
+                meteor.draw(ctx);
+            });
 
-        // Update and draw meteors
-        const deltaTime = 16.67; // ~60fps
-        meteorsRef.current.forEach((meteor) => {
-            meteor.update(width, height, deltaTime);
-            meteor.draw(ctx, width, height);
-        });
+            animationRef.current = requestAnimationFrame(animate);
+        };
 
         animationRef.current = requestAnimationFrame(animate);
-    };
-
-    // Intersection Observer for performance
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsVisible(entry.isIntersecting);
-            },
-            { threshold: 0 }
-        );
-
-        observer.observe(canvas);
-
-        return () => {
-            observer.unobserve(canvas);
-        };
-    }, []);
-
-    // Setup canvas and animation
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-
-        // Initial setup
-        handleResize();
-        initializeMeteors(window.innerWidth, window.innerHeight);
-
-        // Window resize listener for full screen canvas
-        window.addEventListener("resize", handleResize, { passive: true });
-
-        return () => {
-            window.removeEventListener("resize", handleResize);
-            if (animationRef.current) {
-                cancelAnimationFrame(animationRef.current);
-            }
-        };
-    }, []);
-
-    // Start/stop animation based on visibility and preferences
-    useEffect(() => {
-        if (
-            isVisible &&
-            !respectsReducedMotion &&
-            enableAnimation &&
-            dimensions.width > 0
-        ) {
-            animate();
-        } else if (animationRef.current) {
-            cancelAnimationFrame(animationRef.current);
-        }
 
         return () => {
             if (animationRef.current) {
                 cancelAnimationFrame(animationRef.current);
             }
         };
-    }, [isVisible, respectsReducedMotion, enableAnimation, dimensions]);
-
-    // Static fallback for reduced motion
-    const drawStaticMeteors = () => {
-        const canvas = canvasRef.current;
-        if (!canvas || !respectsReducedMotion) return;
-
-        const ctx = canvas.getContext("2d");
-        const { width, height } = dimensions;
-
-        // Clear canvas
-        ctx.fillStyle = "rgba(7, 7, 10, 1)";
-        ctx.fillRect(0, 0, width, height);
-
-        // Draw static meteors (no animation)
-        meteorsRef.current.forEach((meteor) => {
-            meteor.draw(ctx, width, height);
-        });
-    };
-
-    useEffect(() => {
-        if (respectsReducedMotion && dimensions.width > 0) {
-            drawStaticMeteors();
-        }
-    }, [respectsReducedMotion, dimensions]);
+    }, [enableAnimation, isVisible, dimensions, meteorSpeed, glowIntensity]);
 
     return (
         <canvas
             ref={canvasRef}
-            className={`fixed inset-0 pointer-events-none ${className}`}
+            className={`absolute inset-0 pointer-events-none ${className}`}
             style={{
-                background: "transparent",
-                zIndex: -1,
-                width: "100vw",
-                height: "100vh",
+                width: '100%',
+                height: '100%',
+                opacity: fadeOnEdges ? 0.8 : 1,
             }}
-            aria-hidden="true"
         />
     );
 };

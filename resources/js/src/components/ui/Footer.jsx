@@ -59,145 +59,232 @@ function Footer() {
 
     return (
         <footer
-            className="bg-surface border-t border-subtle-highlight mt-auto"
+            className="relative bg-surface border-t border-subtle-highlight mt-auto overflow-hidden"
             role="contentinfo"
             aria-label="Site footer with company information and links"
         >
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {/* Background pattern */}
+            <div className="absolute inset-0 opacity-5">
+                <div className="absolute top-10 left-10 w-32 h-32 bg-gradient-to-br from-primary-orange to-primary-blue rounded-full blur-3xl"></div>
+                <div className="absolute bottom-10 right-10 w-24 h-24 bg-gradient-to-br from-primary-blue to-primary-orange rounded-full blur-2xl"></div>
+                <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-primary-orange rounded-full blur-xl opacity-60"></div>
+            </div>
+
+            <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 {/* Main footer content */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
-                    {/* Brand section */}
-                    <div className="col-span-1 md:col-span-2">
-                        <div className="flex items-center space-x-3 mb-6">
-                            <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center">
-                                <span className="text-white font-bold text-xl font-heading">
-                                    K
-                                </span>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+                    {/* Brand section - Enhanced */}
+                    <div className="col-span-1 lg:col-span-6">
+                        <div className="mb-8">
+                            <div className="flex items-center space-x-4 mb-6">
+                                <div className="relative">
+                                    <div className="w-14 h-14 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-lg">
+                                        <span className="text-white font-bold text-2xl font-heading">
+                                            K
+                                        </span>
+                                    </div>
+                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary-orange rounded-full animate-pulse"></div>
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl lg:text-3xl font-heading font-bold text-gradient mb-1">
+                                        Kuroragi Digital Studio
+                                    </h2>
+                                    <p className="text-primary-orange font-medium text-sm tracking-wide">
+                                        Digital Innovation Partner
+                                    </p>
+                                </div>
                             </div>
-                            <div>
-                                <span className="text-xl font-heading font-bold text-gradient">
-                                    Kuroragi Digital Studio
-                                </span>
+                            
+                            <div className="bg-subtle-highlight/30 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-subtle-highlight/50">
+                                <p className="text-primary-orange font-semibold text-lg mb-3 tracking-wide">
+                                    "Shaping Ideas Into Digital Mastery"
+                                </p>
+                                <p className="text-muted-text leading-relaxed">
+                                    Transforming visionary concepts into powerful digital experiences 
+                                    through innovative design, cutting-edge technology, and strategic thinking 
+                                    that drives measurable results for your business.
+                                </p>
                             </div>
                         </div>
-                        <p className="text-muted-text mb-6 max-w-md leading-relaxed">
-                            <span className="text-gradient font-medium">
-                                "Shaping Ideas Into Digital Mastery"
-                            </span>
-                            <br />
-                            <br />
-                            Transforming visionary concepts into powerful
-                            digital experiences through innovative design and
-                            cutting-edge technology.
-                        </p>
 
-                        {/* Social links */}
-                        <div className="flex space-x-4">
-                            {socialLinks.map((social) => (
-                                <a
-                                    key={social.name}
-                                    href={social.href}
-                                    className="p-2 rounded-lg text-muted-text hover:text-primary-blue hover:bg-subtle-highlight transition-all duration-200"
-                                    aria-label={social.name}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    {social.icon}
-                                </a>
-                            ))}
+                        {/* Enhanced Social links */}
+                        <div className="space-y-4">
+                            <h3 className="text-primary-text font-semibold text-lg">
+                                Connect With Us
+                            </h3>
+                            <div className="flex flex-wrap gap-3">
+                                {socialLinks.map((social, index) => (
+                                    <a
+                                        key={social.name}
+                                        href={social.href}
+                                        className="group relative p-3 rounded-xl bg-subtle-highlight/30 backdrop-blur-sm border border-subtle-highlight/50 text-muted-text hover:text-white hover:bg-gradient-primary transition-all duration-300 transform hover:scale-105 hover:shadow-lg"
+                                        aria-label={social.name}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{ animationDelay: `${index * 100}ms` }}
+                                    >
+                                        <div className="relative z-10">
+                                            {social.icon}
+                                        </div>
+                                        <div className="absolute inset-0 bg-gradient-primary rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    </a>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
-                    {/* Quick links */}
-                    <div>
-                        <h3 className="text-primary-text font-semibold mb-4">
-                            Quick Links
-                        </h3>
-                        <nav
-                            className="space-y-3"
-                            role="navigation"
-                            aria-label="Quick navigation links"
-                        >
-                            {quickLinks.map((link) => (
-                                <Link
-                                    key={link.name}
-                                    to={link.href}
-                                    className="block text-muted-text hover:text-primary-blue transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
-                                >
-                                    {link.name}
-                                </Link>
-                            ))}
-                        </nav>
-                    </div>
+                    {/* Navigation & Contact - Enhanced */}
+                    <div className="col-span-1 lg:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {/* Quick links */}
+                        <div className="bg-subtle-highlight/20 backdrop-blur-sm rounded-2xl p-6 border border-subtle-highlight/30">
+                            <h3 className="text-primary-text font-semibold text-lg mb-6 flex items-center">
+                                <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center mr-3">
+                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </div>
+                                Quick Links
+                            </h3>
+                            <nav
+                                className="space-y-3"
+                                role="navigation"
+                                aria-label="Quick navigation links"
+                            >
+                                {quickLinks.map((link, index) => (
+                                    <Link
+                                        key={link.name}
+                                        to={link.href}
+                                        className="group flex items-center text-muted-text hover:text-primary-blue transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg p-2 hover:bg-subtle-highlight/40"
+                                        style={{ animationDelay: `${index * 50}ms` }}
+                                    >
+                                        <div className="w-2 h-2 bg-primary-orange rounded-full mr-3 opacity-60 group-hover:opacity-100 transition-opacity"></div>
+                                        {link.name}
+                                    </Link>
+                                ))}
+                            </nav>
+                        </div>
 
-                    {/* Contact info */}
-                    <div>
-                        <h3 className="text-primary-text font-semibold mb-4">
-                            Get In Touch
-                        </h3>
-                        <div className="space-y-3 text-muted-text">
-                            <div className="flex items-center space-x-3">
-                                <svg
-                                    className="w-4 h-4 text-primary-blue flex-shrink-0"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                    />
-                                </svg>
-                                <span>hello@kuroragi.studio</span>
-                            </div>
-                            <div className="flex items-center space-x-3">
-                                <svg
-                                    className="w-4 h-4 text-primary-blue flex-shrink-0"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                >
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                                    />
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                                    />
-                                </svg>
-                                <span>Jakarta, Indonesia</span>
+                        {/* Contact info */}
+                        <div className="bg-subtle-highlight/20 backdrop-blur-sm rounded-2xl p-6 border border-subtle-highlight/30">
+                            <h3 className="text-primary-text font-semibold text-lg mb-6 flex items-center">
+                                <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center mr-3">
+                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                </div>
+                                Get In Touch
+                            </h3>
+                            <div className="space-y-4">
+                                <div className="group flex items-start space-x-4 p-3 rounded-lg hover:bg-subtle-highlight/30 transition-colors">
+                                    <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <svg
+                                            className="w-5 h-5 text-white"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-muted-text text-sm mb-1">Email</p>
+                                        <p className="text-primary-text font-medium">hello@kuroragi.studio</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="group flex items-start space-x-4 p-3 rounded-lg hover:bg-subtle-highlight/30 transition-colors">
+                                    <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <svg
+                                            className="w-5 h-5 text-white"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                            />
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-muted-text text-sm mb-1">Location</p>
+                                        <p className="text-primary-text font-medium">Jakarta, Indonesia</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Bottom section */}
-                <div className="border-t border-subtle-highlight pt-8 mt-12">
-                    <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-                        <p className="text-muted-text text-sm">
-                            &copy; {currentYear} Kuroragi Digital Studio. All
-                            rights reserved.
-                        </p>
-                        <div className="flex space-x-6 text-sm">
-                            <Link
-                                to="/privacy"
-                                className="text-muted-text hover:text-primary-blue transition-colors"
-                            >
-                                Privacy Policy
-                            </Link>
-                            <Link
-                                to="/terms"
-                                className="text-muted-text hover:text-primary-blue transition-colors"
-                            >
-                                Terms of Service
-                            </Link>
+                {/* Enhanced Bottom section */}
+                <div className="relative mt-16">
+                    {/* Decorative separator */}
+                    <div className="flex items-center justify-center mb-8">
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-subtle-highlight to-transparent"></div>
+                        <div className="mx-4 flex space-x-2">
+                            <div className="w-2 h-2 bg-primary-orange rounded-full animate-pulse"></div>
+                            <div className="w-2 h-2 bg-primary-blue rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                            <div className="w-2 h-2 bg-primary-orange rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                        </div>
+                        <div className="flex-1 h-px bg-gradient-to-r from-transparent via-subtle-highlight to-transparent"></div>
+                    </div>
+
+                    <div className="bg-subtle-highlight/20 backdrop-blur-sm rounded-2xl p-6 border border-subtle-highlight/30">
+                        <div className="flex flex-col lg:flex-row justify-between items-center space-y-6 lg:space-y-0">
+                            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6">
+                                <p className="text-muted-text text-sm flex items-center">
+                                    <span className="inline-block w-1 h-1 bg-primary-orange rounded-full mr-2"></span>
+                                    &copy; {currentYear} Kuroragi Digital Studio
+                                </p>
+                                <p className="text-muted-text text-sm flex items-center">
+                                    <span className="inline-block w-1 h-1 bg-primary-blue rounded-full mr-2"></span>
+                                    All rights reserved
+                                </p>
+                            </div>
+                            
+                            <div className="flex flex-wrap justify-center lg:justify-end gap-4 text-sm">
+                                <Link
+                                    to="/privacy"
+                                    className="flex items-center text-muted-text hover:text-primary-blue transition-all duration-200 px-3 py-1 rounded-lg hover:bg-subtle-highlight/30"
+                                >
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                    </svg>
+                                    Privacy Policy
+                                </Link>
+                                <Link
+                                    to="/terms"
+                                    className="flex items-center text-muted-text hover:text-primary-blue transition-all duration-200 px-3 py-1 rounded-lg hover:bg-subtle-highlight/30"
+                                >
+                                    <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                    </svg>
+                                    Terms of Service
+                                </Link>
+                            </div>
+                        </div>
+
+                        {/* Additional tagline */}
+                        <div className="text-center mt-6 pt-6 border-t border-subtle-highlight/30">
+                            <p className="text-muted-text text-xs tracking-wide">
+                                Crafted with ❤️ in Indonesia • 
+                                <span className="text-gradient font-medium ml-1">
+                                    Powered by Innovation
+                                </span>
+                            </p>
                         </div>
                     </div>
                 </div>

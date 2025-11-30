@@ -4,11 +4,13 @@ import { AuthProvider } from "./contexts/AuthContext";
 import AppRoutes from "./routes/AppRoutes";
 import ErrorBoundary from "./components/ui/ErrorBoundary";
 
+/* PHASE 6 PERFORMANCE OPTIMIZATIONS - COMMENTED OUT
 // Import performance monitoring in development
 import {
     PerformanceDashboard,
     useWebVitals,
 } from "./hooks/usePerformanceMonitor.jsx";
+*/
 
 // Import accessibility testing in development
 if (process.env.NODE_ENV === "development") {
@@ -37,11 +39,13 @@ function ScrollToTop() {
  * Provides routing, authentication context, error handling, dan scroll management
  */
 function App() {
+    /* PHASE 6 PERFORMANCE OPTIMIZATIONS - COMMENTED OUT
     const [showPerformanceDashboard, setShowPerformanceDashboard] =
         useState(false);
 
     // Performance monitoring
     const { vitals, customMetrics } = useWebVitals();
+    */
 
     // Setup aplikasi dan font preloading
     useEffect(() => {
@@ -64,11 +68,12 @@ function App() {
                     </div>
                 </AuthProvider>
 
+                {/* PHASE 6 PERFORMANCE OPTIMIZATIONS - COMMENTED OUT
                 {/* Performance Dashboard - Development Only */}
-                <PerformanceDashboard isVisible={showPerformanceDashboard} />
+                {/* <PerformanceDashboard isVisible={showPerformanceDashboard} /> */}
 
                 {/* Performance Dashboard Toggle - Development Only */}
-                {process.env.NODE_ENV === "development" && (
+                {/* {process.env.NODE_ENV === "development" && (
                     <button
                         onClick={() =>
                             setShowPerformanceDashboard(
@@ -78,9 +83,10 @@ function App() {
                         className="fixed bottom-4 left-4 bg-blue-600 text-white p-2 rounded text-xs z-50"
                         title="Toggle Performance Dashboard"
                     >
-                        📊
+                */}
+                {/*        📊
                     </button>
-                )}
+                )} */}
             </BrowserRouter>
         </ErrorBoundary>
     );

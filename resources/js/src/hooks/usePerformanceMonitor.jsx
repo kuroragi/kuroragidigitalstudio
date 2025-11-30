@@ -3,7 +3,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 /**
  * Web Vitals Performance Monitor
  * Tracks Core Web Vitals and custom performance metrics
+ * PHASE 6 PERFORMANCE OPTIMIZATIONS - COMMENTED OUT
  */
+
+/*
 export function useWebVitals() {
     const [vitals, setVitals] = useState({
         FCP: null,    // First Contentful Paint
@@ -342,6 +345,41 @@ export function PerformanceDashboard({ isVisible = false }) {
             </div>
         </div>
     );
+}
+
+export default {
+    useWebVitals,
+    usePerformanceBudget,
+    useFrameRateMonitor,
+    useMemoryMonitor,
+    useNetworkMonitor,
+    PerformanceDashboard
+};
+*/
+
+// Temporary fallback hooks
+export function useWebVitals() {
+    return [{ FCP: null, LCP: null, FID: null, CLS: null, TTFB: null, INP: null }, () => {}];
+}
+
+export function usePerformanceBudget() {
+    return { budget: {}, usage: {}, violations: [], isWithinBudget: true };
+}
+
+export function useFrameRateMonitor() {
+    return { fps: 60, avgFps: 60, minFps: 60, maxFps: 60, frameDrops: 0 };
+}
+
+export function useMemoryMonitor() {
+    return { memory: { used: 0, total: 0, percentage: 0 }, isHighUsage: false };
+}
+
+export function useNetworkMonitor() {
+    return { connection: { type: 'wifi', speed: 'fast' }, requests: [], totalSize: 0 };
+}
+
+export function PerformanceDashboard() {
+    return null;
 }
 
 export default {
