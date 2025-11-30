@@ -1,1 +1,48 @@
-import React from 'react';\n\n/**\n * Badge Component\n * Small labels untuk status, categories, etc.\n */\nfunction Badge({ \n    variant = 'default', \n    size = 'md', \n    children, \n    className = '',\n    ...props \n}) {\n    const baseClasses = 'inline-flex items-center font-medium rounded-full';\n    \n    const variants = {\n        default: 'bg-subtle-highlight text-primary-text',\n        primary: 'bg-primary-blue text-white',\n        secondary: 'bg-accent-cyan text-primary-bg',\n        success: 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',\n        warning: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',\n        danger: 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',\n        outline: 'border border-subtle-highlight text-muted-text',\n    };\n    \n    const sizes = {\n        sm: 'px-2 py-0.5 text-xs',\n        md: 'px-2.5 py-1 text-sm',\n        lg: 'px-3 py-1.5 text-base',\n    };\n    \n    const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`;\n    \n    return (\n        <span className={classes} {...props}>\n            {children}\n        </span>\n    );\n}\n\nexport default Badge;
+import React from "react";
+import { cn } from "@/utils/cn";
+
+/**
+ * Badge Component
+ * Small labels untuk status, categories, etc.
+ */
+function Badge({
+    variant = "default",
+    size = "md",
+    children,
+    className = "",
+    ...props
+}) {
+    const baseClasses = "inline-flex items-center font-medium rounded-full";
+
+    const variants = {
+        default: "bg-gray-800 text-gray-200",
+        primary: "bg-blue-500 text-white",
+        secondary: "bg-cyan-500 text-gray-900",
+        success: "bg-green-500 text-white",
+        warning: "bg-yellow-500 text-gray-900",
+        danger: "bg-red-500 text-white",
+        outline: "border border-gray-600 text-gray-300",
+    };
+
+    const sizes = {
+        sm: "px-2 py-0.5 text-xs",
+        md: "px-2.5 py-1 text-sm",
+        lg: "px-3 py-1.5 text-base",
+    };
+
+    return (
+        <span
+            className={cn(
+                baseClasses,
+                variants[variant],
+                sizes[size],
+                className
+            )}
+            {...props}
+        >
+            {children}
+        </span>
+    );
+}
+
+export default Badge;

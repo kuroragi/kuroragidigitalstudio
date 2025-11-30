@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import usePerformanceOptimization from "../../hooks/usePerformanceOptimization";
+import CanvasPerformanceOptimizer, {
+    CanvasResizeOptimizer,
+} from "../../utils/canvasOptimizer";
+import { useLazyLoading } from "../../hooks/useLazyLoading.jsx";
 
 const MeteorCanvas = ({
     className = "",
@@ -14,8 +18,19 @@ const MeteorCanvas = ({
     const canvasRef = useRef(null);
     const animationRef = useRef(null);
     const meteorsRef = useRef([]);
+    const lastFrameTimeRef = useRef(0);
+    const fpsCounterRef = useRef({ frames: 0, lastTime: 0, fps: 60 });
+    const meteorPoolRef = useRef([]);
+    const performanceOptimizerRef = useRef(new CanvasPerformanceOptimizer());
+    const resizeOptimizerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
     const [isVisible, setIsVisible] = useState(false);
+
+    // Lazy loading for better performance
+    const { elementRef, isIntersecting } = useLazyLoading({
+        threshold: 0.1,
+        rootMargin: "100px",
+    });
 
     // Performance optimization hook
     const {
@@ -39,52 +54,36 @@ const MeteorCanvas = ({
         ? optimizedSettings.glowIntensity || baseGlowIntensity
         : baseGlowIntensity;
 
-    // Meteor class for better performance
+    // Optimized Meteor class with pooling support
     class Meteor {
         constructor(canvasWidth, canvasHeight) {
             this.reset(canvasWidth, canvasHeight, true);
             this.trail = [];
             this.maxTrailLength = autoOptimize
-                ? optimizedSettings.trailLength || 8
-                : Math.random() * 8 + 4;
+                ? optimizedSettings.trailLength || 4
+                : Math.random() * 3 + 2;
+            this.isActive = true;
+            this.lastX = 0;
+            this.lastY = 0;
         }
 
         reset(canvasWidth, canvasHeight, isInitial = false) {
-            // Spawn from random edge with proper velocity
-            const edge = Math.floor(Math.random() * 4);
+            // Spawn meteors only from top, falling down
+            // Random spawn across the top edge with some variation
+            const spawnMargin = canvasWidth * 0.2; // 20% margin on sides
+            this.x =
+                spawnMargin + Math.random() * (canvasWidth - spawnMargin * 2);
+            this.y = -100; // Start higher above screen
 
-            switch (edge) {
-                case 0: // Top
-                    this.x = Math.random() * canvasWidth;
-                    this.y = -50;
-                    this.vx = (Math.random() - 0.5) * meteorSpeed;
-                    this.vy = Math.random() * meteorSpeed + 0.1;
-                    break;
-                case 1: // Right
-                    this.x = canvasWidth + 50;
-                    this.y = Math.random() * canvasHeight;
-                    this.vx = -(Math.random() * meteorSpeed + 0.1);
-                    this.vy = (Math.random() - 0.5) * meteorSpeed;
-                    break;
-                case 2: // Bottom
-                    this.x = Math.random() * canvasWidth;
-                    this.y = canvasHeight + 50;
-                    this.vx = (Math.random() - 0.5) * meteorSpeed;
-                    this.vy = -(Math.random() * meteorSpeed + 0.1);
-                    break;
-                case 3: // Left
-                    this.x = -50;
-                    this.y = Math.random() * canvasHeight;
-                    this.vx = Math.random() * meteorSpeed + 0.1;
-                    this.vy = (Math.random() - 0.5) * meteorSpeed;
-                    break;
-            }
+            // Slow gentle falling movement
+            this.vx = (Math.random() - 0.5) * meteorSpeed * 0.1; // Very slight horizontal drift
+            this.vy = Math.random() * meteorSpeed * 0.3 + meteorSpeed * 0.2; // Slow downward movement
 
-            // Random properties
+            // Small star-like meteors
             this.isBig = Math.random() < bigMeteorChance;
             this.size = this.isBig
-                ? Math.random() * 3 + 2
-                : Math.random() * 1.5 + 0.5;
+                ? Math.random() * 1.5 + 1 // Big meteors: 1-2.5px
+                : Math.random() * 0.8 + 0.3; // Regular meteors: 0.3-1.1px
             this.opacity = Math.random() * 0.6 + 0.4;
             this.hue = Math.random() * 60 + 200; // Blue to cyan range
             this.twinkle = Math.random() * 2 * Math.PI;
@@ -110,12 +109,11 @@ const MeteorCanvas = ({
             // Update twinkle
             this.twinkle += this.twinkleSpeed * deltaTime;
 
-            // Check if meteor is out of bounds (with buffer)
+            // Check if meteor has fallen below screen or drifted too far horizontally
             if (
-                this.x < -100 ||
-                this.x > canvasWidth + 100 ||
-                this.y < -100 ||
-                this.y > canvasHeight + 100
+                this.y > canvasHeight + 100 || // Fallen below screen
+                this.x < -100 || // Drifted too far left
+                this.x > canvasWidth + 100 // Drifted too far right
             ) {
                 this.reset(canvasWidth, canvasHeight);
             }
@@ -178,10 +176,9 @@ const MeteorCanvas = ({
                 ctx.save();
                 ctx.globalAlpha = finalOpacity;
 
-                // Outer glow
+                // Subtle star glow - minimal
                 if (glowIntensity > 0) {
-                    const glowSize =
-                        this.size * (this.isBig ? 8 : 5) * glowIntensity;
+                    const glowSize = this.size * 2 * glowIntensity; // Much smaller glow
                     const glowGradient = ctx.createRadialGradient(
                         this.x,
                         this.y,
@@ -190,15 +187,12 @@ const MeteorCanvas = ({
                         this.y,
                         glowSize
                     );
-                    glowGradient.addColorStop(0, `hsl(${this.hue}, 100%, 80%)`);
-                    glowGradient.addColorStop(
-                        0.3,
-                        `hsl(${this.hue}, 80%, 60%)`
-                    );
+                    glowGradient.addColorStop(0, `hsl(${this.hue}, 80%, 85%)`);
                     glowGradient.addColorStop(
                         0.7,
-                        `hsl(${this.hue}, 60%, 40%)`
+                        `hsl(${this.hue}, 60%, 60%)`
                     );
+                    glowGradient.addColorStop(1, `hsl(${this.hue}, 40%, 30%)`);
                     glowGradient.addColorStop(1, "transparent");
 
                     ctx.fillStyle = glowGradient;
@@ -238,28 +232,29 @@ const MeteorCanvas = ({
         );
     };
 
-    // Handle canvas resize
+    // Handle canvas resize - always full viewport
     const handleResize = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        const rect = canvas.getBoundingClientRect();
+        const width = window.innerWidth;
+        const height = window.innerHeight;
         const dpr = window.devicePixelRatio || 1;
 
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
 
         const ctx = canvas.getContext("2d");
         ctx.scale(dpr, dpr);
 
-        canvas.style.width = rect.width + "px";
-        canvas.style.height = rect.height + "px";
+        canvas.style.width = width + "px";
+        canvas.style.height = height + "px";
 
-        setDimensions({ width: rect.width, height: rect.height });
+        setDimensions({ width, height });
 
         // Reinitialize meteors with new dimensions
         if (meteorsRef.current.length > 0) {
-            initializeMeteors(rect.width, rect.height);
+            initializeMeteors(width, height);
         }
     };
 
@@ -315,14 +310,13 @@ const MeteorCanvas = ({
 
         // Initial setup
         handleResize();
-        initializeMeteors(dimensions.width, dimensions.height);
+        initializeMeteors(window.innerWidth, window.innerHeight);
 
-        // Resize listener
-        const resizeObserver = new ResizeObserver(handleResize);
-        resizeObserver.observe(canvas);
+        // Window resize listener for full screen canvas
+        window.addEventListener("resize", handleResize, { passive: true });
 
         return () => {
-            resizeObserver.disconnect();
+            window.removeEventListener("resize", handleResize);
             if (animationRef.current) {
                 cancelAnimationFrame(animationRef.current);
             }
@@ -376,10 +370,12 @@ const MeteorCanvas = ({
     return (
         <canvas
             ref={canvasRef}
-            className={`absolute inset-0 pointer-events-none ${className}`}
+            className={`fixed inset-0 pointer-events-none ${className}`}
             style={{
                 background: "transparent",
                 zIndex: -1,
+                width: "100vw",
+                height: "100vh",
             }}
             aria-hidden="true"
         />

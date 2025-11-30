@@ -82,12 +82,25 @@ export function AuthProvider({ children }) {
 
     const checkAuth = async () => {
         try {
-            const response = await axios.get("/user");
+            const token = localStorage.getItem("admin_token");
+            if (!token) {
+                dispatch({ type: AUTH_ACTIONS.SET_USER, payload: null });
+                return;
+            }
+
+            // Set token in axios defaults
+            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+            const response = await axios.get("/api/v1/admin/me");
             dispatch({
                 type: AUTH_ACTIONS.SET_USER,
                 payload: response.data.user,
             });
         } catch (error) {
+            // Remove invalid token
+            localStorage.removeItem("admin_token");
+            localStorage.removeItem("admin_user");
+            delete axios.defaults.headers.common["Authorization"];
             dispatch({ type: AUTH_ACTIONS.SET_USER, payload: null });
         }
     };
@@ -96,10 +109,25 @@ export function AuthProvider({ children }) {
         dispatch({ type: AUTH_ACTIONS.LOGIN_START });
 
         try {
-            const response = await axios.post("/login", { email, password });
+            // Get CSRF cookie first for SPA authentication
+            await axios.get("/sanctum/csrf-cookie");
+
+            const response = await axios.post("/admin/login", {
+                email,
+                password,
+            });
+
+            // Store token and user data
+            const { token, user } = response.data;
+            localStorage.setItem("admin_token", token);
+            localStorage.setItem("admin_user", JSON.stringify(user));
+
+            // Set token in axios defaults
+            axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
             dispatch({
                 type: AUTH_ACTIONS.LOGIN_SUCCESS,
-                payload: response.data.user,
+                payload: user,
             });
             return { success: true, data: response.data };
         } catch (error) {
@@ -112,10 +140,20 @@ export function AuthProvider({ children }) {
 
     const logout = async () => {
         try {
-            await axios.post("/logout");
+            const token = localStorage.getItem("admin_token");
+            if (token) {
+                axios.defaults.headers.common[
+                    "Authorization"
+                ] = `Bearer ${token}`;
+                await axios.post("/admin/logout");
+            }
         } catch (error) {
             console.warn("Logout error:", error);
         } finally {
+            // Clear local storage and axios headers
+            localStorage.removeItem("admin_token");
+            localStorage.removeItem("admin_user");
+            delete axios.defaults.headers.common["Authorization"];
             dispatch({ type: AUTH_ACTIONS.LOGOUT });
         }
     };

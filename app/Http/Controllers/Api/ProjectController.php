@@ -33,10 +33,34 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
-        // TODO: Implement project creation with validation and file upload
-        return response()->json([
-            'message' => 'Project creation will be implemented in phase 4'
-        ], 501);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'content' => 'nullable|string',
+                'image_url' => 'nullable|url',
+                'project_url' => 'nullable|url',
+                'github_url' => 'nullable|url',
+                'technologies' => 'nullable|array',
+                'category' => 'required|in:web,mobile,design,other',
+                'status' => 'required|in:draft,published',
+                'is_featured' => 'boolean',
+            ]);
+
+            $project = Project::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Project created successfully',
+                'data' => $project
+            ], 201);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create project: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -54,10 +78,34 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
-        // TODO: Implement project update
-        return response()->json([
-            'message' => 'Project update will be implemented in phase 4'
-        ], 501);
+        try {
+            $validated = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'content' => 'nullable|string',
+                'image_url' => 'nullable|url',
+                'project_url' => 'nullable|url',
+                'github_url' => 'nullable|url',
+                'technologies' => 'nullable|array',
+                'category' => 'required|in:web,mobile,design,other',
+                'status' => 'required|in:draft,published',
+                'is_featured' => 'boolean',
+            ]);
+
+            $project->update($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Project updated successfully',
+                'data' => $project->fresh()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update project: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -65,9 +113,19 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
-        // TODO: Implement project deletion
-        return response()->json([
-            'message' => 'Project deletion will be implemented in phase 4'
-        ], 501);
+        try {
+            $project->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Project deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete project: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

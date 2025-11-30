@@ -13,18 +13,20 @@ class Contact extends Model
         'name',
         'email',
         'organization',
+        'phone',
+        'service',
+        'subject',
         'message',
-        'attachment',
-        'read_flag',
-        'priority',
+        'budget',
+        'timeline',
         'status',
-        'admin_notes',
-        'responded_at'
+        'metadata'
     ];
 
     protected $casts = [
-        'read_flag' => 'boolean',
-        'responded_at' => 'datetime',
+        'metadata' => 'array',
+        'read_at' => 'datetime',
+        'replied_at' => 'datetime'
     ];
 
     /**
@@ -32,7 +34,7 @@ class Contact extends Model
      */
     public function scopeUnread($query)
     {
-        return $query->where('read_flag', false);
+        return $query->whereNull('read_at');
     }
 
     /**
@@ -44,11 +46,11 @@ class Contact extends Model
     }
 
     /**
-     * Scope for high priority contacts
+     * Scope for specific service
      */
-    public function scopeHighPriority($query)
+    public function scopeByService($query, $service)
     {
-        return $query->where('priority', 'high');
+        return $query->where('service', $service);
     }
 
     /**
@@ -56,17 +58,20 @@ class Contact extends Model
      */
     public function markAsRead()
     {
-        $this->update(['read_flag' => true]);
+        $this->update([
+            'status' => 'read',
+            'read_at' => now()
+        ]);
     }
 
     /**
-     * Mark contact as responded
+     * Mark contact as replied
      */
-    public function markAsResponded()
+    public function markAsReplied()
     {
         $this->update([
-            'status' => 'responded',
-            'responded_at' => now()
+            'status' => 'replied',
+            'replied_at' => now()
         ]);
     }
 

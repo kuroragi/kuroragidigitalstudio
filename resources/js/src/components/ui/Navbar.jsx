@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useKeyboardNavigation } from "../../hooks/useAccessibility";
 
 /**
  * Advanced Navbar Component
@@ -11,6 +12,7 @@ function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const { isAuthenticated, user } = useAuth();
     const location = useLocation();
+    const { handleKeyDown } = useKeyboardNavigation();
 
     // Scroll effect untuk transparent → solid transition
     useEffect(() => {
@@ -47,6 +49,8 @@ function Navbar() {
     return (
         <>
             <nav
+                role="navigation"
+                aria-label="Main navigation"
                 className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
                     isScrolled
                         ? "bg-surface/95 backdrop-blur-md border-b border-subtle-highlight shadow-lg"
@@ -59,7 +63,8 @@ function Navbar() {
                         <div className="flex items-center">
                             <Link
                                 to="/"
-                                className="flex items-center space-x-3 group"
+                                className="flex items-center space-x-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded-lg"
+                                aria-label="Kuroragi Digital Studio - Go to homepage"
                             >
                                 <div className="w-10 h-10 bg-gradient-primary rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
                                     <span className="text-white font-bold text-xl font-heading">
@@ -135,11 +140,18 @@ function Navbar() {
 
                             {/* Mobile menu button */}
                             <button
-                                className="lg:hidden p-2 rounded-lg text-muted-text hover:text-primary-text hover:bg-subtle-highlight transition-colors"
+                                className="lg:hidden p-2 rounded-lg text-muted-text hover:text-primary-text hover:bg-subtle-highlight transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                                 onClick={() =>
                                     setIsMobileMenuOpen(!isMobileMenuOpen)
                                 }
+                                onKeyDown={(e) =>
+                                    handleKeyDown(e, () =>
+                                        setIsMobileMenuOpen(!isMobileMenuOpen)
+                                    )
+                                }
                                 aria-label="Toggle mobile menu"
+                                aria-expanded={isMobileMenuOpen}
+                                aria-controls="mobile-menu"
                             >
                                 <svg
                                     className="w-6 h-6"
@@ -171,6 +183,10 @@ function Navbar() {
 
             {/* Mobile menu */}
             <div
+                id="mobile-menu"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Mobile navigation menu"
                 className={`lg:hidden fixed inset-0 z-40 transition-opacity duration-300 ${
                     isMobileMenuOpen
                         ? "opacity-100 pointer-events-auto"
@@ -192,12 +208,16 @@ function Navbar() {
                     }`}
                 >
                     <div className="p-6">
-                        <nav className="space-y-4">
+                        <nav
+                            className="space-y-4"
+                            role="navigation"
+                            aria-label="Mobile navigation links"
+                        >
                             {navigationItems.map((item) => (
                                 <Link
                                     key={item.name}
                                     to={item.href}
-                                    className={`block px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                                    className={`block px-4 py-3 rounded-lg text-base font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${
                                         isActivePath(item.href, item.exact)
                                             ? "bg-primary-blue text-white"
                                             : "text-muted-text hover:text-primary-text hover:bg-subtle-highlight"

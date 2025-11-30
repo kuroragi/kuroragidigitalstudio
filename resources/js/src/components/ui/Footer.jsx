@@ -58,7 +58,11 @@ function Footer() {
     ];
 
     return (
-        <footer className="bg-surface border-t border-subtle-highlight mt-auto">
+        <footer
+            className="bg-surface border-t border-subtle-highlight mt-auto"
+            role="contentinfo"
+            aria-label="Site footer with company information and links"
+        >
             <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 {/* Main footer content */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12">
@@ -109,12 +113,16 @@ function Footer() {
                         <h3 className="text-primary-text font-semibold mb-4">
                             Quick Links
                         </h3>
-                        <nav className="space-y-3">
+                        <nav
+                            className="space-y-3"
+                            role="navigation"
+                            aria-label="Quick navigation links"
+                        >
                             {quickLinks.map((link) => (
                                 <Link
                                     key={link.name}
                                     to={link.href}
-                                    className="block text-muted-text hover:text-primary-blue transition-colors duration-200"
+                                    className="block text-muted-text hover:text-primary-blue transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
                                 >
                                     {link.name}
                                 </Link>

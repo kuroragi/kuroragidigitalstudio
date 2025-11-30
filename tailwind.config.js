@@ -157,6 +157,31 @@ export default {
                     background:
                         "linear-gradient(135deg, #07070a 0%, #0f1115 100%)",
                 },
+
+                // Accessibility utilities
+                ".sr-only": {
+                    position: "absolute",
+                    width: "1px",
+                    height: "1px",
+                    padding: "0",
+                    margin: "-1px",
+                    overflow: "hidden",
+                    clip: "rect(0, 0, 0, 0)",
+                    whiteSpace: "nowrap",
+                    border: "0",
+                },
+                ".focus-visible": {
+                    outline: "2px solid #1B82F4",
+                    "outline-offset": "2px",
+                    "box-shadow": "0 0 0 2px #1B82F4",
+                },
+                ".reduced-motion": {
+                    "animation-duration": "0.01ms !important",
+                    "animation-iteration-count": "1 !important",
+                    "transition-duration": "0.01ms !important",
+                    "scroll-behavior": "auto !important",
+                },
+
                 ".scrollbar-thin": {
                     "scrollbar-width": "thin",
                     "scrollbar-color": "#1B82F4 #0f1115",

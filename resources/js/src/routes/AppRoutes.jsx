@@ -1,28 +1,66 @@
-import React from "react";
+import React, { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Layout from "../components/Layout";
-import ProtectedRoute from "../components/ProtectedRoute";
-import AdminLayout from "../components/admin/AdminLayout";
+import AdminRoute from "../components/AdminRoute";
+import { createLazyComponents } from "../hooks/useCodeSplitting.jsx";
+import { LazyImage } from "../hooks/useLazyLoading.jsx";
 
-// Public Pages
-import Home from "../pages/Home";
-import About from "../pages/About";
-import Services from "../pages/Services";
-import Portfolio from "../pages/Portfolio";
-import Blog from "../pages/Blog";
-import BlogPost from "../pages/BlogPost";
-import Contact from "../pages/Contact";
-import MeteorTest from "../pages/MeteorTest";
+// Page Loading Components
+const PageLoader = () => (
+    <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-blue mx-auto"></div>
+            <p className="text-muted-text">Loading...</p>
+        </div>
+    </div>
+);
 
-// Auth Pages
-import PortalLogin from "../pages/PortalLogin";
+const AdminLoader = () => (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center space-y-4">
+            <div className="animate-pulse space-y-3">
+                <div className="h-8 bg-gray-300 rounded w-48 mx-auto"></div>
+                <div className="h-4 bg-gray-300 rounded w-32 mx-auto"></div>
+            </div>
+        </div>
+    </div>
+);
 
-// Admin Pages
-import AdminDashboard from "../pages/admin/Dashboard";
-import AdminProjects from "../pages/admin/Projects";
-import AdminServices from "../pages/admin/Services";
-import AdminPosts from "../pages/admin/Posts";
-import AdminContacts from "../pages/admin/Contacts";
+// Lazy-loaded Public Pages
+const Home = createLazyComponents.page(() => import("../pages/Home"));
+const About = createLazyComponents.page(() => import("../pages/About"));
+const Services = createLazyComponents.page(() => import("../pages/Services"));
+const Portfolio = createLazyComponents.page(() => import("../pages/Portfolio"));
+const Blog = createLazyComponents.page(() => import("../pages/Blog"));
+const BlogPost = createLazyComponents.page(() => import("../pages/BlogPost"));
+const Contact = createLazyComponents.page(() => import("../pages/Contact"));
+
+// Lazy-loaded Test Pages (development only)
+const MeteorTest = createLazyComponents.animation(() =>
+    import("../pages/MeteorTest")
+);
+const ParallaxTest = createLazyComponents.animation(() =>
+    import("../pages/ParallaxTest")
+);
+const HeroTest = createLazyComponents.animation(() =>
+    import("../pages/HeroTest")
+);
+
+// Lazy-loaded Showcase Pages
+const CardShowcase = createLazyComponents.page(() =>
+    import("../pages/showcase/CardShowcase")
+);
+
+// Lazy-loaded Auth Pages
+const PortalLogin = createLazyComponents.form(() =>
+    import("../pages/PortalLogin")
+);
+
+// Lazy-loaded Admin Pages (loaded only when needed)
+const AdminDashboard = React.lazy(() => import("../pages/AdminDashboard"));
+const AdminContacts = React.lazy(() => import("../pages/AdminContacts"));
+const AdminProjects = React.lazy(() => import("../pages/AdminProjects"));
+const AdminPosts = React.lazy(() => import("../pages/AdminPosts"));
 
 // Error Pages
 import NotFound from "../pages/NotFound";
@@ -37,19 +75,44 @@ const publicRoutes = [
     { path: "/blog/:slug", element: <BlogPost /> },
     { path: "/contact", element: <Contact /> },
     { path: "/meteor-test", element: <MeteorTest /> },
+    { path: "/parallax-test", element: <ParallaxTest /> },
+    { path: "/hero-test", element: <HeroTest /> },
+    { path: "/card-showcase", element: <CardShowcase /> },
 ];
 
 const adminRoutes = [
     {
-        path: "/admin",
-        element: <Navigate to="/admin/dashboard" replace />,
-        exact: true,
+        path: "/portal/dashboard",
+        element: (
+            <Suspense fallback={<AdminLoader />}>
+                <AdminDashboard />
+            </Suspense>
+        ),
     },
-    { path: "/admin/dashboard", element: <AdminDashboard /> },
-    { path: "/admin/projects", element: <AdminProjects /> },
-    { path: "/admin/services", element: <AdminServices /> },
-    { path: "/admin/posts", element: <AdminPosts /> },
-    { path: "/admin/contacts", element: <AdminContacts /> },
+    {
+        path: "/portal/contacts",
+        element: (
+            <Suspense fallback={<AdminLoader />}>
+                <AdminContacts />
+            </Suspense>
+        ),
+    },
+    {
+        path: "/portal/projects",
+        element: (
+            <Suspense fallback={<AdminLoader />}>
+                <AdminProjects />
+            </Suspense>
+        ),
+    },
+    {
+        path: "/portal/posts",
+        element: (
+            <Suspense fallback={<AdminLoader />}>
+                <AdminPosts />
+            </Suspense>
+        ),
+    },
 ];
 
 /**
@@ -74,16 +137,12 @@ function AppRoutes() {
             {/* Hidden Portal Login (no layout) */}
             <Route path="/portal" element={<PortalLogin />} />
 
-            {/* Protected Admin Routes dengan AdminLayout */}
+            {/* Protected Admin Routes */}
             {adminRoutes.map((route, index) => (
                 <Route
                     key={index}
                     path={route.path}
-                    element={
-                        <ProtectedRoute>
-                            <AdminLayout>{route.element}</AdminLayout>
-                        </ProtectedRoute>
-                    }
+                    element={<AdminRoute>{route.element}</AdminRoute>}
                 />
             ))}
 

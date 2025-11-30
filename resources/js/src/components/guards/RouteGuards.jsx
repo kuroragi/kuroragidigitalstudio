@@ -1,1 +1,95 @@
-import React from 'react';\nimport { Navigate, useLocation } from 'react-router-dom';\nimport { useAuth } from '../../contexts/AuthContext';\nimport LoadingSpinner from '../ui/LoadingSpinner';\n\n/**\n * Route Guard untuk protect authenticated routes\n */\nexport function AuthGuard({ children, redirectTo = '/portal' }) {\n    const { isAuthenticated, isLoading } = useAuth();\n    const location = useLocation();\n\n    if (isLoading) {\n        return (\n            <div className=\"min-h-screen bg-primary-bg flex items-center justify-center\">\n                <LoadingSpinner size=\"lg\" />\n            </div>\n        );\n    }\n\n    if (!isAuthenticated) {\n        return <Navigate to={redirectTo} state={{ from: location }} replace />;\n    }\n\n    return children;\n}\n\n/**\n * Route Guard untuk admin-only routes\n */\nexport function AdminGuard({ children, redirectTo = '/' }) {\n    const { user, isAuthenticated, isLoading } = useAuth();\n    const location = useLocation();\n\n    if (isLoading) {\n        return (\n            <div className=\"min-h-screen bg-primary-bg flex items-center justify-center\">\n                <LoadingSpinner size=\"lg\" />\n            </div>\n        );\n    }\n\n    if (!isAuthenticated || user?.role !== 'admin') {\n        return <Navigate to={redirectTo} state={{ from: location }} replace />;\n    }\n\n    return children;\n}\n\n/**\n * Route Guard untuk guest-only routes (seperti login page)\n */\nexport function GuestGuard({ children, redirectTo = '/' }) {\n    const { isAuthenticated, isLoading } = useAuth();\n    \n    if (isLoading) {\n        return (\n            <div className=\"min-h-screen bg-primary-bg flex items-center justify-center\">\n                <LoadingSpinner size=\"lg\" />\n            </div>\n        );\n    }\n\n    if (isAuthenticated) {\n        return <Navigate to={redirectTo} replace />;\n    }\n\n    return children;\n}\n\n/**\n * Route Guard dengan role-based access\n */\nexport function RoleGuard({ children, allowedRoles = [], redirectTo = '/' }) {\n    const { user, isAuthenticated, isLoading } = useAuth();\n    const location = useLocation();\n\n    if (isLoading) {\n        return (\n            <div className=\"min-h-screen bg-primary-bg flex items-center justify-center\">\n                <LoadingSpinner size=\"lg\" />\n            </div>\n        );\n    }\n\n    if (!isAuthenticated) {\n        return <Navigate to=\"/portal\" state={{ from: location }} replace />;\n    }\n\n    if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {\n        return <Navigate to={redirectTo} replace />;\n    }\n\n    return children;\n}
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import LoadingSpinner from "../ui/LoadingSpinner";
+
+/**
+ * Route Guard untuk protect authenticated routes
+ */
+export function AuthGuard({ children, redirectTo = "/portal" }) {
+    const { isAuthenticated, isLoading } = useAuth();
+    const location = useLocation();
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+                <LoadingSpinner size="lg" />
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to={redirectTo} state={{ from: location }} replace />;
+    }
+
+    return children;
+}
+
+/**
+ * Route Guard untuk admin-only routes
+ */
+export function AdminGuard({ children, redirectTo = "/" }) {
+    const { user, isAuthenticated, isLoading } = useAuth();
+    const location = useLocation();
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+                <LoadingSpinner size="lg" />
+            </div>
+        );
+    }
+
+    if (!isAuthenticated || user?.role !== "admin") {
+        return <Navigate to={redirectTo} state={{ from: location }} replace />;
+    }
+
+    return children;
+}
+
+/**
+ * Route Guard untuk guest-only routes (seperti login page)
+ */
+export function GuestGuard({ children, redirectTo = "/" }) {
+    const { isAuthenticated, isLoading } = useAuth();
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+                <LoadingSpinner size="lg" />
+            </div>
+        );
+    }
+
+    if (isAuthenticated) {
+        return <Navigate to={redirectTo} replace />;
+    }
+
+    return children;
+}
+
+/**
+ * Route Guard dengan role-based access
+ */
+export function RoleGuard({ children, allowedRoles = [], redirectTo = "/" }) {
+    const { user, isAuthenticated, isLoading } = useAuth();
+    const location = useLocation();
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+                <LoadingSpinner size="lg" />
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to="/portal" state={{ from: location }} replace />;
+    }
+
+    if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role)) {
+        return <Navigate to={redirectTo} replace />;
+    }
+
+    return children;
+}

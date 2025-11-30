@@ -1,15 +1,27 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import Navbar from "./ui/Navbar";
 import Footer from "./ui/Footer";
 import LoadingSpinner from "./ui/LoadingSpinner";
+import SkipLinks from "./ui/SkipLinks";
+import ScreenReaderAnnouncement, {
+    setGlobalAnnounce,
+} from "./ui/ScreenReaderAnnouncement";
+import { useScreenReaderAnnouncement } from "../hooks/useAccessibility";
 import usePageMetadata from "../hooks/usePageMetadata";
 
 /**
- * Main Layout Component
- * Provides consistent layout structure untuk public pages
+ * Main Layout Component with Accessibility Features
+ * Provides consistent layout structure with accessibility enhancements
  */
 function Layout() {
+    const { announce } = useScreenReaderAnnouncement();
+
+    // Set up global announcement function
+    useEffect(() => {
+        setGlobalAnnounce(announce);
+    }, [announce]);
+
     // Set default page metadata
     usePageMetadata({
         title: "Kuroragi Digital Studio",
@@ -24,14 +36,31 @@ function Layout() {
 
     return (
         <div className="min-h-screen bg-primary-bg text-primary-text flex flex-col">
+            {/* Skip Links for keyboard navigation */}
+            <SkipLinks />
+
+            {/* Screen Reader Announcements */}
+            <ScreenReaderAnnouncement />
+
             {/* Navigation */}
-            <Navbar />
+            <header id="navigation" role="banner">
+                <Navbar />
+            </header>
 
             {/* Main Content */}
-            <main className="flex-1">
+            <main
+                id="main-content"
+                role="main"
+                className="flex-1"
+                tabIndex="-1"
+            >
                 <Suspense
                     fallback={
-                        <div className="min-h-screen flex items-center justify-center">
+                        <div
+                            className="min-h-screen flex items-center justify-center"
+                            role="status"
+                            aria-live="polite"
+                        >
                             <LoadingSpinner
                                 variant="page"
                                 size="lg"
@@ -45,7 +74,9 @@ function Layout() {
             </main>
 
             {/* Footer */}
-            <Footer />
+            <footer id="footer" role="contentinfo">
+                <Footer />
+            </footer>
         </div>
     );
 }

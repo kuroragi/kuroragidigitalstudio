@@ -14,7 +14,7 @@ function PortalLogin() {
 
     // Redirect if already authenticated
     if (isAuthenticated) {
-        return <Navigate to="/admin/dashboard" replace />;
+        return <Navigate to="/portal/dashboard" replace />;
     }
 
     const handleSubmit = async (e) => {
